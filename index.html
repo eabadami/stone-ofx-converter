@@ -2,552 +2,433 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stone CSV → OFX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stone OFX">
+<title>Conversor Stone</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#faf9f7;--card:#fff;--border:#e8e4df;--text:#2d2a26;--muted:#8a857e;--accent:#2D8659;--accent-light:#e8f5ee;--red:#c0392b;--red-light:#fdecea}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
-.container{width:100%;max-width:520px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px 24px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-h1{font-size:22px;font-weight:700;margin-bottom:4px}
-.subtitle{color:var(--muted);font-size:13px;margin-bottom:24px}
-label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
-.pin-input{display:flex;gap:8px;justify-content:center;margin:20px 0}
-.pin-input input{width:48px;height:56px;text-align:center;font-size:24px;font-weight:700;border:2px solid var(--border);border-radius:10px;outline:none;transition:border .2s}
-.pin-input input:focus{border-color:var(--accent)}
-.btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#246e4a}
-.btn-primary:disabled{background:#b0c9b8;cursor:not-allowed}
-.btn-download{background:var(--accent-light);color:var(--accent);margin-top:12px}
-.btn-download:hover{background:#d4edde}
-.dropzone{border:2px dashed var(--border);border-radius:10px;padding:32px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:16px}
-.dropzone.active{border-color:var(--accent);background:var(--accent-light)}
-.dropzone p{color:var(--muted);font-size:14px}
-.dropzone .icon{font-size:32px;margin-bottom:8px;display:block}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:#f5f0eb;
+  color:#3d3830;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:24px 16px;
+}
+
+/* Header clínica */
+.logo{
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,#2D8659,#3ba370);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:12px;
+  box-shadow:0 2px 8px rgba(45,134,89,.25);
+}
+.logo svg{width:28px;height:28px}
+.clinic-name{font-size:13px;color:#9a9389;margin-bottom:24px;text-align:center}
+
+/* Card principal */
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:32px 24px;
+  width:100%;max-width:400px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+  text-align:center;
+}
+.title{font-size:20px;font-weight:700;margin-bottom:6px;color:#2d2a26}
+.desc{font-size:14px;color:#9a9389;margin-bottom:28px;line-height:1.5}
+
+/* Botão de selecionar arquivo */
+.upload-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:18px 20px;
+  background:#f5f0eb;
+  border:2px dashed #d4cdc4;
+  border-radius:14px;
+  font-size:16px;font-weight:600;color:#6b6459;
+  cursor:pointer;
+  transition:all .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.upload-btn:active{background:#ebe5dd;border-color:#b0a898}
+.upload-btn svg{flex-shrink:0}
 .file-input{display:none}
-.preview{margin:16px 0;overflow-x:auto}
-.preview table{width:100%;border-collapse:collapse;font-size:12px}
-.preview th{background:#f5f3f0;text-align:left;padding:8px 10px;font-weight:600;border-bottom:2px solid var(--border);white-space:nowrap}
-.preview td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
-.stat{background:var(--bg);border-radius:8px;padding:12px;text-align:center}
-.stat .val{font-size:18px;font-weight:700}
-.stat .lbl{font-size:11px;color:var(--muted);margin-top:2px}
-.stat.credit .val{color:var(--accent)}
-.stat.debit .val{color:var(--red)}
-.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin:12px 0}
-.alert-success{background:var(--accent-light);color:#1a5c3a;border-left:3px solid var(--accent)}
-.alert-error{background:var(--red-light);color:var(--red);border-left:3px solid var(--red)}
-.steps{list-style:none;font-size:12px;color:var(--muted);margin:16px 0;padding-left:0}
-.steps li{padding:4px 0;padding-left:20px;position:relative}
-.steps li::before{content:"";position:absolute;left:0;top:10px;width:8px;height:8px;border-radius:50%;background:var(--border)}
-.steps li.done::before{background:var(--accent)}
-.mapping{font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px;margin:12px 0}
-.mapping strong{color:var(--text)}
+
+/* Arquivo selecionado */
+.file-name{
+  font-size:13px;color:#9a9389;
+  margin-top:12px;
+  word-break:break-all;
+}
+
+/* Resultado */
+.result{margin-top:24px;display:none}
+.result.show{display:block}
+
+.success-icon{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,#2D8659,#3ba370);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;
+}
+.success-icon svg{width:32px;height:32px}
+
+.success-text{font-size:16px;font-weight:600;color:#2D8659;margin-bottom:4px}
+.success-detail{font-size:13px;color:#9a9389;margin-bottom:20px}
+
+.download-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:18px;
+  background:linear-gradient(135deg,#2D8659,#3ba370);
+  border:none;border-radius:14px;
+  font-size:17px;font-weight:700;color:#fff;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(45,134,89,.3);
+  transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.download-btn:active{transform:scale(.97);box-shadow:0 2px 6px rgba(45,134,89,.3)}
+.download-btn svg{flex-shrink:0}
+
+/* Novo arquivo */
+.reset-btn{
+  display:inline-block;
+  margin-top:16px;
+  background:none;border:none;
+  font-size:14px;color:#9a9389;
+  cursor:pointer;text-decoration:underline;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Erro */
+.error{
+  margin-top:16px;
+  padding:14px 18px;
+  background:#fdf0ef;
+  border-radius:12px;
+  font-size:14px;color:#c0392b;
+  display:none;
+}
+.error.show{display:block}
+
+/* PIN */
+.pin-screen{text-align:center}
+.pin-label{font-size:15px;color:#6b6459;margin-bottom:16px}
+.pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:12px}
+.pin-row input{
+  width:52px;height:60px;
+  text-align:center;
+  font-size:26px;font-weight:700;color:#3d3830;
+  border:2px solid #d4cdc4;border-radius:12px;
+  background:#faf8f5;
+  outline:none;transition:border .2s;
+  -webkit-appearance:none;
+}
+.pin-row input:focus{border-color:#2D8659;background:#fff}
+.pin-error{font-size:13px;color:#c0392b;height:20px}
+
 .hidden{display:none}
-.back-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;margin-bottom:16px;padding:0}
-.back-btn:hover{color:var(--text)}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <!-- PIN Screen -->
-  <div id="pinScreen" class="card">
-    <h1>Stone → OFX</h1>
-    <p class="subtitle">Conversor de extrato Stone para OFX</p>
-    <label style="text-align:center">Digite o PIN de acesso</label>
-    <div class="pin-input">
-      <input type="tel" maxlength="1" inputmode="numeric" data-pin="0" autofocus>
-      <input type="tel" maxlength="1" inputmode="numeric" data-pin="1">
-      <input type="tel" maxlength="1" inputmode="numeric" data-pin="2">
-      <input type="tel" maxlength="1" inputmode="numeric" data-pin="3">
+<!-- Logo e nome -->
+<div class="logo">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+</div>
+<div class="clinic-name">Dra. Michelle Pontes</div>
+
+<!-- Tela PIN -->
+<div class="card" id="pinScreen">
+  <div class="title">Extrato Stone</div>
+  <div class="desc">Digite a senha para acessar</div>
+  <div class="pin-row">
+    <input type="tel" maxlength="1" inputmode="numeric" data-p="0" autofocus>
+    <input type="tel" maxlength="1" inputmode="numeric" data-p="1">
+    <input type="tel" maxlength="1" inputmode="numeric" data-p="2">
+    <input type="tel" maxlength="1" inputmode="numeric" data-p="3">
+  </div>
+  <div class="pin-error" id="pinError"></div>
+</div>
+
+<!-- Tela principal -->
+<div class="card hidden" id="mainScreen">
+  <div class="title">Extrato Stone</div>
+  <div class="desc">Selecione o arquivo da Stone para converter</div>
+
+  <div id="uploadArea">
+    <div class="upload-btn" id="uploadBtn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Selecionar arquivo
     </div>
-    <div id="pinError" class="alert alert-error hidden">PIN incorreto</div>
+    <input type="file" accept=".csv,.txt" class="file-input" id="fileInput">
+    <div class="file-name" id="fileName"></div>
   </div>
 
-  <!-- Converter Screen -->
-  <div id="converterScreen" class="card hidden">
-    <h1>Stone → OFX</h1>
-    <p class="subtitle">Envie o CSV exportado do Portal Stone</p>
+  <div class="error" id="errorMsg"></div>
 
-    <ol class="steps">
-      <li id="step1">Selecione o arquivo CSV</li>
-      <li id="step2">Verifique a prévia</li>
-      <li id="step3">Baixe o OFX</li>
-    </ol>
-
-    <div id="uploadArea">
-      <div class="dropzone" id="dropzone">
-        <span class="icon">📄</span>
-        <p>Arraste o CSV aqui<br>ou toque para selecionar</p>
-      </div>
-      <input type="file" accept=".csv,.txt" class="file-input" id="fileInput">
+  <div class="result" id="resultArea">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
+    <div class="success-text">Arquivo pronto!</div>
+    <div class="success-detail" id="resultDetail"></div>
 
-    <div id="resultArea" class="hidden">
-      <button class="back-btn" id="resetBtn">← Novo arquivo</button>
+    <button class="download-btn" id="downloadBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Baixar arquivo convertido
+    </button>
 
-      <div id="mappingInfo" class="mapping"></div>
-
-      <div class="preview" id="previewArea"></div>
-
-      <div class="stats" id="statsArea"></div>
-
-      <div id="alerts"></div>
-
-      <button class="btn btn-download" id="downloadBtn" style="display:none">
-        Baixar arquivo OFX
-      </button>
-    </div>
+    <button class="reset-btn" id="resetBtn">Converter outro arquivo</button>
   </div>
 </div>
 
 <script>
-// ============================================================
 // PIN
-// ============================================================
-const CORRECT_PIN = '1234';
-const pinInputs = document.querySelectorAll('.pin-input input');
-const pinError = document.getElementById('pinError');
+var PIN = '1234';
+var pins = document.querySelectorAll('.pin-row input');
 
-pinInputs.forEach((inp, i) => {
-  inp.addEventListener('input', () => {
-    if (inp.value.length === 1 && i < pinInputs.length - 1) {
-      pinInputs[i + 1].focus();
-    }
-    checkPin();
-  });
-  inp.addEventListener('keydown', (e) => {
-    if (e.key === 'Backspace' && !inp.value && i > 0) {
-      pinInputs[i - 1].focus();
-    }
-  });
-});
-
-function checkPin() {
-  const pin = Array.from(pinInputs).map(i => i.value).join('');
-  if (pin.length === 4) {
-    if (pin === CORRECT_PIN) {
-      document.getElementById('pinScreen').classList.add('hidden');
-      document.getElementById('converterScreen').classList.remove('hidden');
-    } else {
-      pinError.classList.remove('hidden');
-      pinInputs.forEach(i => { i.value = ''; });
-      pinInputs[0].focus();
-      setTimeout(() => pinError.classList.add('hidden'), 2000);
-    }
-  }
-}
-
-// ============================================================
-// File Upload
-// ============================================================
-const dropzone = document.getElementById('dropzone');
-const fileInput = document.getElementById('fileInput');
-
-dropzone.addEventListener('click', () => fileInput.click());
-dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('active'); });
-dropzone.addEventListener('dragleave', () => dropzone.classList.remove('active'));
-dropzone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropzone.classList.remove('active');
-  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', () => {
-  if (fileInput.files.length) handleFile(fileInput.files[0]);
-});
-
-document.getElementById('resetBtn').addEventListener('click', resetConverter);
-
-function resetConverter() {
-  document.getElementById('uploadArea').classList.remove('hidden');
-  document.getElementById('resultArea').classList.add('hidden');
-  document.getElementById('downloadBtn').style.display = 'none';
-  document.getElementById('step1').classList.remove('done');
-  document.getElementById('step2').classList.remove('done');
-  document.getElementById('step3').classList.remove('done');
-  fileInput.value = '';
-}
-
-// ============================================================
-// CSV Parsing
-// ============================================================
-
-function readFileAsArrayBuffer(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-function decodeCSV(buffer) {
-  const encodings = ['utf-8', 'iso-8859-1'];
-  for (const enc of encodings) {
-    try {
-      const text = new TextDecoder(enc, { fatal: true }).decode(buffer);
-      if (text.length > 0) return text;
-    } catch (e) { /* try next */ }
-  }
-  return new TextDecoder('iso-8859-1').decode(buffer);
-}
-
-function detectSeparator(text) {
-  const firstLine = text.split('\n')[0];
-  const counts = { ';': 0, ',': 0, '\t': 0 };
-  for (const ch of firstLine) {
-    if (ch in counts) counts[ch]++;
-  }
-  let best = ';', max = 0;
-  for (const [sep, c] of Object.entries(counts)) {
-    if (c > max) { max = c; best = sep; }
-  }
-  return best;
-}
-
-function parseCSV(text) {
-  const sep = detectSeparator(text);
-  const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l);
-  if (lines.length < 2) return null;
-
-  const headers = lines[0].split(sep).map(h => h.replace(/^"|"$/g, '').trim());
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const vals = lines[i].split(sep).map(v => v.replace(/^"|"$/g, '').trim());
-    if (vals.length >= 2) {
-      const row = {};
-      headers.forEach((h, j) => { row[h] = vals[j] || ''; });
-      rows.push(row);
-    }
-  }
-  return { headers, rows };
-}
-
-// ============================================================
-// Column Detection (ported from Python)
-// ============================================================
-
-function detectColumns(headers) {
-  const lower = {};
-  headers.forEach(h => { lower[h.toLowerCase().trim()] = h; });
-  const mapping = {};
-
-  const dateCandidates = [
-    'data', 'data da transação', 'data transação', 'data da venda',
-    'data de pagamento', 'data pagamento', 'date', 'data_transacao',
-    'data da captura', 'data captura',
-  ];
-  for (const c of dateCandidates) {
-    if (lower[c]) { mapping.date = lower[c]; break; }
-  }
-
-  const amountCandidates = [
-    'valor', 'valor bruto', 'valor líquido', 'valor da transação',
-    'valor_bruto', 'valor_liquido', 'amount', 'valor transação',
-    'valor da venda', 'valor total',
-  ];
-  for (const c of amountCandidates) {
-    if (lower[c]) { mapping.amount = lower[c]; break; }
-  }
-
-  const descCandidates = [
-    'descrição', 'descricao', 'description', 'tipo', 'tipo de transação',
-    'tipo transação', 'bandeira', 'forma de pagamento', 'produto',
-    'tipo de pagamento', 'status',
-  ];
-  for (const c of descCandidates) {
-    if (lower[c]) { mapping.description = lower[c]; break; }
-  }
-
-  const txnIdCandidates = [
-    'nsu', 'id', 'id da transação', 'código', 'codigo',
-    'stone id', 'transaction_id', 'authorization_code',
-    'código de autorização', 'numero do comprovante',
-  ];
-  for (const c of txnIdCandidates) {
-    if (lower[c]) { mapping.txnId = lower[c]; break; }
-  }
-
-  return mapping;
-}
-
-// ============================================================
-// Number & Date Parsing (Brazilian format)
-// ============================================================
-
-function parseBrazilianNumber(val) {
-  if (!val || val.trim() === '') return 0;
-  let s = val.trim().replace(/[R$\s]/g, '');
-  let negative = false;
-  if (s.startsWith('(') && s.endsWith(')')) { negative = true; s = s.slice(1, -1); }
-  if (s.startsWith('-')) { negative = true; s = s.slice(1); }
-  if (s.includes('.') && s.includes(',')) {
-    s = s.replace(/\./g, '').replace(',', '.');
-  } else if (s.includes(',')) {
-    s = s.replace(',', '.');
-  }
-  const num = parseFloat(s);
-  if (isNaN(num)) return 0;
-  return negative ? -num : num;
-}
-
-function parseDate(val) {
-  if (!val || val.trim() === '') return new Date();
-  const s = val.trim();
-
-  // dd/mm/yyyy or dd/mm/yyyy HH:MM:SS
-  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+\d{2}:\d{2}:\d{2})?$/);
-  if (m) return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]));
-
-  // dd/mm/yy
-  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
-  if (m) return new Date(2000 + parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]));
-
-  // yyyy-mm-dd
-  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (m) return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
-
-  // dd-mm-yyyy
-  m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
-  if (m) return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]));
-
-  return new Date();
-}
-
-// ============================================================
-// FITID Generation (SHA-256 via Web Crypto, fallback to simple hash)
-// ============================================================
-
-function simpleHash(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const ch = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + ch;
-    hash |= 0;
-  }
-  return Math.abs(hash).toString(16).toUpperCase().padStart(16, '0').slice(0, 16);
-}
-
-function generateFitId(data, index) {
-  return simpleHash(data + '_' + index);
-}
-
-// ============================================================
-// Transaction Parsing
-// ============================================================
-
-function parseTransactions(rows, mapping) {
-  const transactions = [];
-  let errors = 0;
-
-  rows.forEach((row, idx) => {
-    try {
-      const dt = parseDate(row[mapping.date]);
-      const amount = parseBrazilianNumber(row[mapping.amount]);
-      if (amount === 0) return;
-
-      const memoParts = [];
-      if (mapping.description && row[mapping.description]) {
-        memoParts.push(row[mapping.description].trim());
+pins.forEach(function(inp, i) {
+  inp.addEventListener('input', function() {
+    if (inp.value.length === 1 && i < pins.length - 1) pins[i + 1].focus();
+    var code = '';
+    pins.forEach(function(p) { code += p.value; });
+    if (code.length === 4) {
+      if (code === PIN) {
+        document.getElementById('pinScreen').classList.add('hidden');
+        document.getElementById('mainScreen').classList.remove('hidden');
+      } else {
+        document.getElementById('pinError').textContent = 'Senha incorreta';
+        pins.forEach(function(p) { p.value = ''; });
+        pins[0].focus();
+        setTimeout(function() { document.getElementById('pinError').textContent = ''; }, 2000);
       }
-      if (mapping.txnId && row[mapping.txnId]) {
-        memoParts.push('NSU:' + row[mapping.txnId].trim());
-      }
-      const memo = memoParts.length ? memoParts.join(' | ') : 'Stone';
-      const fitid = generateFitId(dt.toISOString() + amount + memo, idx);
-
-      transactions.push({ date: dt, amount, memo, fitid });
-    } catch (e) {
-      errors++;
     }
   });
-
-  return { transactions, errors };
-}
-
-// ============================================================
-// OFX Builder
-// ============================================================
-
-function pad2(n) { return n.toString().padStart(2, '0'); }
-
-function fmtOFXDate(d) {
-  return d.getFullYear().toString() +
-    pad2(d.getMonth() + 1) + pad2(d.getDate()) +
-    pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds());
-}
-
-function buildOFX(transactions, accountId) {
-  accountId = accountId || 'STONE_CMP';
-  if (!transactions.length) return '';
-
-  const dates = transactions.map(t => t.date);
-  const dtStart = fmtOFXDate(new Date(Math.min(...dates)));
-  const dtEnd = fmtOFXDate(new Date(Math.max(...dates)));
-  const now = fmtOFXDate(new Date());
-
-  const lines = [
-    'OFXHEADER:100', 'DATA:OFXSGML', 'VERSION:102', 'SECURITY:NONE',
-    'ENCODING:USASCII', 'CHARSET:1252', 'COMPRESSION:NONE',
-    'OLDFILEUID:NONE', 'NEWFILEUID:NONE', '',
-    '<OFX>', '<SIGNONMSGSRSV1>', '<SONRS>', '<STATUS>',
-    '<CODE>0', '<SEVERITY>INFO', '</STATUS>',
-    '<DTSERVER>' + now, '<LANGUAGE>POR',
-    '</SONRS>', '</SIGNONMSGSRSV1>',
-    '<BANKMSGSRSV1>', '<STMTTRNRS>', '<TRNUID>1',
-    '<STATUS>', '<CODE>0', '<SEVERITY>INFO', '</STATUS>',
-    '<STMTRS>', '<CURDEF>BRL', '<BANKACCTFROM>',
-    '<BANKID>STONE', '<ACCTID>' + accountId,
-    '<ACCTTYPE>CHECKING', '</BANKACCTFROM>',
-    '<BANKTRANLIST>', '<DTSTART>' + dtStart, '<DTEND>' + dtEnd,
-  ];
-
-  transactions.forEach(txn => {
-    const dtStr = fmtOFXDate(txn.date);
-    const trntype = txn.amount >= 0 ? 'CREDIT' : 'DEBIT';
-    const memo = (txn.memo || 'Stone').slice(0, 255);
-    lines.push(
-      '<STMTTRN>', '<TRNTYPE>' + trntype,
-      '<DTPOSTED>' + dtStr, '<TRNAMT>' + txn.amount.toFixed(2),
-      '<FITID>' + txn.fitid, '<MEMO>' + memo,
-      '</STMTTRN>'
-    );
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace' && !inp.value && i > 0) pins[i - 1].focus();
   });
+});
 
-  const total = transactions.reduce((s, t) => s + t.amount, 0);
-  lines.push(
-    '</BANKTRANLIST>', '<LEDGERBAL>',
-    '<BALAMT>' + total.toFixed(2), '<DTASOF>' + dtEnd,
-    '</LEDGERBAL>', '</STMTRS>', '</STMTTRNRS>',
-    '</BANKMSGSRSV1>', '</OFX>'
-  );
+// Upload
+document.getElementById('uploadBtn').addEventListener('click', function() {
+  document.getElementById('fileInput').click();
+});
 
-  return lines.join('\n');
-}
+document.getElementById('fileInput').addEventListener('change', function() {
+  if (this.files.length) processFile(this.files[0]);
+});
 
-// ============================================================
-// Main Flow
-// ============================================================
+document.getElementById('resetBtn').addEventListener('click', function() {
+  document.getElementById('resultArea').classList.remove('show');
+  document.getElementById('uploadArea').style.display = '';
+  document.getElementById('errorMsg').classList.remove('show');
+  document.getElementById('fileName').textContent = '';
+  document.getElementById('fileInput').value = '';
+});
 
-let currentOFX = '';
-let currentFilename = '';
+// Download
+var savedOFX = '';
+var savedName = '';
 
-async function handleFile(file) {
-  if (!file.name.toLowerCase().endsWith('.csv') && !file.name.toLowerCase().endsWith('.txt')) {
-    showAlert('Selecione um arquivo .csv', 'error');
-    return;
-  }
-
-  document.getElementById('step1').classList.add('done');
-
-  const buffer = await readFileAsArrayBuffer(file);
-  const text = decodeCSV(buffer);
-  const data = parseCSV(text);
-
-  if (!data || data.rows.length === 0) {
-    showAlert('Nao foi possivel ler o arquivo CSV. Verifique o formato.', 'error');
-    return;
-  }
-
-  const mapping = detectColumns(data.headers);
-
-  if (!mapping.date || !mapping.amount) {
-    showAlert('Nao encontrei colunas de Data e Valor. Verifique se e um CSV da Stone.', 'error');
-    return;
-  }
-
-  // Show mapping
-  const mappingEl = document.getElementById('mappingInfo');
-  let mapText = 'Colunas detectadas: <strong>' + mapping.date + '</strong> (data)';
-  mapText += ' | <strong>' + mapping.amount + '</strong> (valor)';
-  if (mapping.description) mapText += ' | <strong>' + mapping.description + '</strong> (desc)';
-  mappingEl.innerHTML = mapText;
-
-  // Preview table
-  const previewEl = document.getElementById('previewArea');
-  const showRows = data.rows.slice(0, 8);
-  const showCols = [mapping.date, mapping.amount];
-  if (mapping.description) showCols.push(mapping.description);
-  if (mapping.txnId) showCols.push(mapping.txnId);
-
-  let html = '<table><thead><tr>';
-  showCols.forEach(c => { html += '<th>' + c + '</th>'; });
-  html += '</tr></thead><tbody>';
-  showRows.forEach(row => {
-    html += '<tr>';
-    showCols.forEach(c => { html += '<td>' + (row[c] || '') + '</td>'; });
-    html += '</tr>';
-  });
-  if (data.rows.length > 8) {
-    html += '<tr><td colspan="' + showCols.length + '" style="text-align:center;color:var(--muted);font-style:italic">... e mais ' + (data.rows.length - 8) + ' linhas</td></tr>';
-  }
-  html += '</tbody></table>';
-  previewEl.innerHTML = html;
-
-  // Parse transactions
-  const { transactions, errors } = parseTransactions(data.rows, mapping);
-
-  if (!transactions.length) {
-    showAlert('Nenhuma transacao valida encontrada.', 'error');
-    return;
-  }
-
-  document.getElementById('step2').classList.add('done');
-
-  // Stats
-  const totalCredit = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-  const totalDebit = transactions.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0);
-
-  const statsEl = document.getElementById('statsArea');
-  statsEl.innerHTML = `
-    <div class="stat"><div class="val">${transactions.length}</div><div class="lbl">Transacoes</div></div>
-    <div class="stat credit"><div class="val">R$ ${totalCredit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="lbl">Creditos</div></div>
-    <div class="stat debit"><div class="val">R$ ${totalDebit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="lbl">Debitos</div></div>
-    <div class="stat"><div class="val">R$ ${(totalCredit + totalDebit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="lbl">Saldo</div></div>
-  `;
-
-  // Build OFX
-  currentOFX = buildOFX(transactions, 'STONE_CMP');
-
-  const txDates = transactions.map(t => t.date);
-  const minD = new Date(Math.min(...txDates));
-  const maxD = new Date(Math.max(...txDates));
-  currentFilename = 'stone_' +
-    minD.getFullYear() + pad2(minD.getMonth()+1) + pad2(minD.getDate()) + '_' +
-    maxD.getFullYear() + pad2(maxD.getMonth()+1) + pad2(maxD.getDate()) + '.ofx';
-
-  let alertMsg = 'Conversao concluida! ' + transactions.length + ' transacoes.';
-  if (errors > 0) alertMsg += ' (' + errors + ' linhas ignoradas)';
-  showAlert(alertMsg, 'success');
-
-  document.getElementById('step3').classList.add('done');
-
-  // Show result
-  document.getElementById('uploadArea').classList.add('hidden');
-  document.getElementById('resultArea').classList.remove('hidden');
-  document.getElementById('downloadBtn').style.display = 'block';
-}
-
-document.getElementById('downloadBtn').addEventListener('click', () => {
-  if (!currentOFX) return;
-  const blob = new Blob([currentOFX], { type: 'application/x-ofx' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+document.getElementById('downloadBtn').addEventListener('click', function() {
+  if (!savedOFX) return;
+  var blob = new Blob([savedOFX], { type: 'application/x-ofx' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
   a.href = url;
-  a.download = currentFilename;
+  a.download = savedName;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 });
 
-function showAlert(msg, type) {
-  const el = document.getElementById('alerts');
-  el.innerHTML = '<div class="alert alert-' + type + '">' + msg + '</div>';
+// ---- Processamento ----
+
+function processFile(file) {
+  document.getElementById('errorMsg').classList.remove('show');
+  document.getElementById('fileName').textContent = file.name;
+
+  var reader = new FileReader();
+  reader.onload = function() {
+    try {
+      var text = decode(reader.result);
+      var data = parseCSV(text);
+      if (!data || data.rows.length === 0) return showError('Nao consegui ler o arquivo. Verifique se e o arquivo correto da Stone.');
+
+      var map = detectCols(data.headers);
+      if (!map.date || !map.amount) return showError('Arquivo nao reconhecido. Verifique se e o extrato correto da Stone.');
+
+      var result = convert(data.rows, map);
+      if (!result.transactions.length) return showError('Nenhuma transacao encontrada no arquivo.');
+
+      savedOFX = buildOFX(result.transactions);
+
+      var dates = result.transactions.map(function(t) { return t.date; });
+      var d1 = new Date(Math.min.apply(null, dates));
+      var d2 = new Date(Math.max.apply(null, dates));
+      savedName = 'stone_' + fmtDate(d1) + '_' + fmtDate(d2) + '.ofx';
+
+      document.getElementById('resultDetail').textContent =
+        result.transactions.length + ' transacoes encontradas';
+      document.getElementById('uploadArea').style.display = 'none';
+      document.getElementById('resultArea').classList.add('show');
+
+    } catch (e) {
+      showError('Erro ao processar o arquivo. Tente novamente.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showError(msg) {
+  var el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// ---- Helpers ----
+
+function decode(buf) {
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+  catch (e) { return new TextDecoder('iso-8859-1').decode(buf); }
+}
+
+function parseCSV(text) {
+  var line1 = text.split('\n')[0];
+  var sep = ';';
+  if ((line1.split(',').length) > (line1.split(';').length)) sep = ',';
+  if ((line1.split('\t').length) > (line1.split(sep).length)) sep = '\t';
+
+  var lines = text.trim().split('\n');
+  if (lines.length < 2) return null;
+
+  var headers = lines[0].split(sep).map(function(h) { return h.replace(/^"|"$/g, '').trim(); });
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var vals = lines[i].split(sep).map(function(v) { return v.replace(/^"|"$/g, '').trim(); });
+    if (vals.length >= 2) {
+      var row = {};
+      headers.forEach(function(h, j) { row[h] = vals[j] || ''; });
+      rows.push(row);
+    }
+  }
+  return { headers: headers, rows: rows };
+}
+
+function detectCols(headers) {
+  var low = {};
+  headers.forEach(function(h) { low[h.toLowerCase().trim()] = h; });
+  var m = {};
+
+  ['data','data da transacao','data transacao','data da venda','data de pagamento','data pagamento','date','data_transacao','data da captura','data captura','data da transação','data transação'].forEach(function(c) {
+    if (!m.date && low[c]) m.date = low[c];
+  });
+  ['valor','valor bruto','valor liquido','valor da transacao','valor_bruto','valor_liquido','amount','valor transacao','valor da venda','valor total','valor líquido','valor da transação','valor transação'].forEach(function(c) {
+    if (!m.amount && low[c]) m.amount = low[c];
+  });
+  ['descricao','descrição','description','tipo','tipo de transacao','tipo transacao','bandeira','forma de pagamento','produto','tipo de pagamento','status','tipo de transação','tipo transação'].forEach(function(c) {
+    if (!m.desc && low[c]) m.desc = low[c];
+  });
+  ['nsu','id','id da transacao','codigo','código','stone id','transaction_id','authorization_code','id da transação','código de autorização','codigo de autorizacao','numero do comprovante'].forEach(function(c) {
+    if (!m.txn && low[c]) m.txn = low[c];
+  });
+
+  return m;
+}
+
+function parseNum(val) {
+  if (!val) return 0;
+  var s = val.trim().replace(/[R$\s]/g, '');
+  var neg = false;
+  if (s.charAt(0) === '(' && s.charAt(s.length - 1) === ')') { neg = true; s = s.slice(1, -1); }
+  if (s.charAt(0) === '-') { neg = true; s = s.slice(1); }
+  if (s.indexOf('.') !== -1 && s.indexOf(',') !== -1) s = s.replace(/\./g, '').replace(',', '.');
+  else if (s.indexOf(',') !== -1) s = s.replace(',', '.');
+  var n = parseFloat(s);
+  if (isNaN(n)) return 0;
+  return neg ? -n : n;
+}
+
+function parseDt(val) {
+  if (!val) return new Date();
+  var s = val.trim();
+  var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (m) {
+    var y = parseInt(m[3]); if (y < 100) y += 2000;
+    return new Date(y, parseInt(m[2]) - 1, parseInt(m[1]));
+  }
+  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+  return new Date();
+}
+
+function hashStr(s) {
+  var h = 0;
+  for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+  return Math.abs(h).toString(16).toUpperCase().padStart(16, '0').slice(0, 16);
+}
+
+function convert(rows, map) {
+  var txns = [], errs = 0;
+  rows.forEach(function(row, idx) {
+    try {
+      var dt = parseDt(row[map.date]);
+      var amt = parseNum(row[map.amount]);
+      if (amt === 0) return;
+      var parts = [];
+      if (map.desc && row[map.desc]) parts.push(row[map.desc].trim());
+      if (map.txn && row[map.txn]) parts.push('NSU:' + row[map.txn].trim());
+      var memo = parts.length ? parts.join(' | ') : 'Stone';
+      txns.push({ date: dt, amount: amt, memo: memo, fitid: hashStr(dt.toISOString() + amt + memo + '_' + idx) });
+    } catch (e) { errs++; }
+  });
+  return { transactions: txns, errors: errs };
+}
+
+function p2(n) { return n < 10 ? '0' + n : '' + n; }
+function fmtDate(d) { return d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()); }
+function ofxDt(d) { return fmtDate(d) + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds()); }
+
+function buildOFX(txns) {
+  var dates = txns.map(function(t) { return t.date; });
+  var d1 = ofxDt(new Date(Math.min.apply(null, dates)));
+  var d2 = ofxDt(new Date(Math.max.apply(null, dates)));
+  var now = ofxDt(new Date());
+
+  var L = [
+    'OFXHEADER:100','DATA:OFXSGML','VERSION:102','SECURITY:NONE',
+    'ENCODING:USASCII','CHARSET:1252','COMPRESSION:NONE',
+    'OLDFILEUID:NONE','NEWFILEUID:NONE','',
+    '<OFX>','<SIGNONMSGSRSV1>','<SONRS>','<STATUS>',
+    '<CODE>0','<SEVERITY>INFO','</STATUS>',
+    '<DTSERVER>' + now,'<LANGUAGE>POR',
+    '</SONRS>','</SIGNONMSGSRSV1>',
+    '<BANKMSGSRSV1>','<STMTTRNRS>','<TRNUID>1',
+    '<STATUS>','<CODE>0','<SEVERITY>INFO','</STATUS>',
+    '<STMTRS>','<CURDEF>BRL','<BANKACCTFROM>',
+    '<BANKID>STONE','<ACCTID>STONE_CMP',
+    '<ACCTTYPE>CHECKING','</BANKACCTFROM>',
+    '<BANKTRANLIST>','<DTSTART>' + d1,'<DTEND>' + d2
+  ];
+
+  txns.forEach(function(t) {
+    L.push('<STMTTRN>','<TRNTYPE>' + (t.amount >= 0 ? 'CREDIT' : 'DEBIT'),
+      '<DTPOSTED>' + ofxDt(t.date),'<TRNAMT>' + t.amount.toFixed(2),
+      '<FITID>' + t.fitid,'<MEMO>' + t.memo.slice(0, 255),'</STMTTRN>');
+  });
+
+  var bal = 0; txns.forEach(function(t) { bal += t.amount; });
+  L.push('</BANKTRANLIST>','<LEDGERBAL>','<BALAMT>' + bal.toFixed(2),
+    '<DTASOF>' + d2,'</LEDGERBAL>','</STMTRS>','</STMTTRNRS>',
+    '</BANKMSGSRSV1>','</OFX>');
+
+  return L.join('\n');
 }
 </script>
 </body>
