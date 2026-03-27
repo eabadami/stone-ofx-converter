@@ -139,21 +139,6 @@ body{
 }
 .error.show{display:block}
 
-/* PIN */
-.pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:12px}
-.pin-row input{
-  width:52px;height:62px;
-  text-align:center;
-  font-family:'Inter',sans-serif;
-  font-size:26px;font-weight:700;color:#1A1A1A;
-  border:2px solid rgba(197,165,114,.3);border-radius:14px;
-  background:rgba(197,165,114,.04);
-  outline:none;transition:all .2s;
-  -webkit-appearance:none;
-}
-.pin-row input:focus{border-color:#C5A572;background:#fff;box-shadow:0 0 0 3px rgba(197,165,114,.12)}
-.pin-error{font-size:13px;color:#c0392b;height:20px;margin-top:4px}
-
 .hidden{display:none}
 
 /* Linha decorativa */
@@ -172,22 +157,8 @@ body{
 </div>
 <div class="clinic-name">Dra. Michelle Pontes</div>
 
-<!-- Tela PIN -->
-<div class="card" id="pinScreen">
-  <div class="title">Extrato Stone</div>
-  <div class="divider"></div>
-  <div class="desc">Digite a senha para acessar</div>
-  <div class="pin-row">
-    <input type="tel" maxlength="1" inputmode="numeric" data-p="0" autofocus>
-    <input type="tel" maxlength="1" inputmode="numeric" data-p="1">
-    <input type="tel" maxlength="1" inputmode="numeric" data-p="2">
-    <input type="tel" maxlength="1" inputmode="numeric" data-p="3">
-  </div>
-  <div class="pin-error" id="pinError"></div>
-</div>
-
 <!-- Tela principal -->
-<div class="card hidden" id="mainScreen">
+<div class="card" id="mainScreen">
   <div class="title">Extrato Stone</div>
   <div class="divider"></div>
   <div class="desc">Selecione o arquivo da Stone para converter</div>
@@ -220,32 +191,6 @@ body{
 </div>
 
 <script>
-// PIN
-var PIN = '1299';
-var pins = document.querySelectorAll('.pin-row input');
-
-pins.forEach(function(inp, i) {
-  inp.addEventListener('input', function() {
-    if (inp.value.length === 1 && i < pins.length - 1) pins[i + 1].focus();
-    var code = '';
-    pins.forEach(function(p) { code += p.value; });
-    if (code.length === 4) {
-      if (code === PIN) {
-        document.getElementById('pinScreen').classList.add('hidden');
-        document.getElementById('mainScreen').classList.remove('hidden');
-      } else {
-        document.getElementById('pinError').textContent = 'Senha incorreta';
-        pins.forEach(function(p) { p.value = ''; });
-        pins[0].focus();
-        setTimeout(function() { document.getElementById('pinError').textContent = ''; }, 2000);
-      }
-    }
-  });
-  inp.addEventListener('keydown', function(e) {
-    if (e.key === 'Backspace' && !inp.value && i > 0) pins[i - 1].focus();
-  });
-});
-
 // Upload
 document.getElementById('uploadBtn').addEventListener('click', function() {
   document.getElementById('fileInput').click();
