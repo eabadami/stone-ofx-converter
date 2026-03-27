@@ -5,13 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Stone OFX">
-<title>Conversor Stone</title>
+<meta name="theme-color" content="#C5A572">
+<title>Conversor Stone — Dra. Michelle Pontes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  background:#f5f0eb;
-  color:#3d3830;
+  font-family:'Inter',sans-serif;
+  background:#FAF7F2;
+  color:#1A1A1A;
   min-height:100vh;
   display:flex;
   flex-direction:column;
@@ -21,46 +25,59 @@ body{
 
 /* Header clínica */
 .logo{
-  width:56px;height:56px;border-radius:50%;
-  background:linear-gradient(135deg,#2D8659,#3ba370);
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#C5A572,#A8894D);
   display:flex;align-items:center;justify-content:center;
-  margin-bottom:12px;
-  box-shadow:0 2px 8px rgba(45,134,89,.25);
+  margin-bottom:10px;
+  box-shadow:0 3px 12px rgba(197,165,114,.35);
 }
-.logo svg{width:28px;height:28px}
-.clinic-name{font-size:13px;color:#9a9389;margin-bottom:24px;text-align:center}
+.logo svg{width:30px;height:30px}
+.clinic-name{
+  font-family:'Playfair Display',serif;
+  font-size:15px;font-weight:600;
+  color:#A8894D;
+  margin-bottom:28px;
+  text-align:center;
+  letter-spacing:0.3px;
+}
 
 /* Card principal */
 .card{
   background:#fff;
-  border-radius:16px;
-  padding:32px 24px;
+  border-radius:20px;
+  padding:36px 28px;
   width:100%;max-width:400px;
-  box-shadow:0 1px 4px rgba(0,0,0,.06);
+  box-shadow:0 2px 12px rgba(168,137,77,.08);
   text-align:center;
+  border:1px solid rgba(197,165,114,.12);
 }
-.title{font-size:20px;font-weight:700;margin-bottom:6px;color:#2d2a26}
-.desc{font-size:14px;color:#9a9389;margin-bottom:28px;line-height:1.5}
+.title{
+  font-family:'Playfair Display',serif;
+  font-size:22px;font-weight:700;
+  margin-bottom:6px;color:#1A1A1A;
+}
+.desc{font-size:14px;color:#888;margin-bottom:28px;line-height:1.5}
 
 /* Botão de selecionar arquivo */
 .upload-btn{
   display:flex;align-items:center;justify-content:center;gap:10px;
-  width:100%;padding:18px 20px;
-  background:#f5f0eb;
-  border:2px dashed #d4cdc4;
+  width:100%;padding:20px;
+  background:rgba(197,165,114,.06);
+  border:2px dashed rgba(197,165,114,.35);
   border-radius:14px;
-  font-size:16px;font-weight:600;color:#6b6459;
+  font-family:'Inter',sans-serif;
+  font-size:16px;font-weight:600;color:#A8894D;
   cursor:pointer;
   transition:all .2s;
   -webkit-tap-highlight-color:transparent;
 }
-.upload-btn:active{background:#ebe5dd;border-color:#b0a898}
+.upload-btn:active{background:rgba(197,165,114,.12);border-color:#C5A572}
 .upload-btn svg{flex-shrink:0}
 .file-input{display:none}
 
 /* Arquivo selecionado */
 .file-name{
-  font-size:13px;color:#9a9389;
+  font-size:13px;color:#999;
   margin-top:12px;
   word-break:break-all;
 }
@@ -70,36 +87,43 @@ body{
 .result.show{display:block}
 
 .success-icon{
-  width:64px;height:64px;border-radius:50%;
-  background:linear-gradient(135deg,#2D8659,#3ba370);
+  width:68px;height:68px;border-radius:50%;
+  background:linear-gradient(135deg,#C5A572,#A8894D);
   display:flex;align-items:center;justify-content:center;
   margin:0 auto 16px;
+  box-shadow:0 4px 16px rgba(197,165,114,.3);
 }
-.success-icon svg{width:32px;height:32px}
+.success-icon svg{width:34px;height:34px}
 
-.success-text{font-size:16px;font-weight:600;color:#2D8659;margin-bottom:4px}
-.success-detail{font-size:13px;color:#9a9389;margin-bottom:20px}
+.success-text{
+  font-family:'Playfair Display',serif;
+  font-size:18px;font-weight:700;
+  color:#A8894D;margin-bottom:4px;
+}
+.success-detail{font-size:13px;color:#999;margin-bottom:24px}
 
 .download-btn{
   display:flex;align-items:center;justify-content:center;gap:8px;
   width:100%;padding:18px;
-  background:linear-gradient(135deg,#2D8659,#3ba370);
+  background:linear-gradient(135deg,#C5A572,#A8894D);
   border:none;border-radius:14px;
+  font-family:'Inter',sans-serif;
   font-size:17px;font-weight:700;color:#fff;
   cursor:pointer;
-  box-shadow:0 4px 12px rgba(45,134,89,.3);
+  box-shadow:0 4px 16px rgba(197,165,114,.35);
   transition:all .15s;
   -webkit-tap-highlight-color:transparent;
 }
-.download-btn:active{transform:scale(.97);box-shadow:0 2px 6px rgba(45,134,89,.3)}
+.download-btn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(197,165,114,.3)}
 .download-btn svg{flex-shrink:0}
 
 /* Novo arquivo */
 .reset-btn{
   display:inline-block;
-  margin-top:16px;
+  margin-top:18px;
   background:none;border:none;
-  font-size:14px;color:#9a9389;
+  font-family:'Inter',sans-serif;
+  font-size:14px;color:#bbb;
   cursor:pointer;text-decoration:underline;
   -webkit-tap-highlight-color:transparent;
 }
@@ -116,22 +140,28 @@ body{
 .error.show{display:block}
 
 /* PIN */
-.pin-screen{text-align:center}
-.pin-label{font-size:15px;color:#6b6459;margin-bottom:16px}
-.pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:12px}
+.pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:12px}
 .pin-row input{
-  width:52px;height:60px;
+  width:52px;height:62px;
   text-align:center;
-  font-size:26px;font-weight:700;color:#3d3830;
-  border:2px solid #d4cdc4;border-radius:12px;
-  background:#faf8f5;
-  outline:none;transition:border .2s;
+  font-family:'Inter',sans-serif;
+  font-size:26px;font-weight:700;color:#1A1A1A;
+  border:2px solid rgba(197,165,114,.3);border-radius:14px;
+  background:rgba(197,165,114,.04);
+  outline:none;transition:all .2s;
   -webkit-appearance:none;
 }
-.pin-row input:focus{border-color:#2D8659;background:#fff}
-.pin-error{font-size:13px;color:#c0392b;height:20px}
+.pin-row input:focus{border-color:#C5A572;background:#fff;box-shadow:0 0 0 3px rgba(197,165,114,.12)}
+.pin-error{font-size:13px;color:#c0392b;height:20px;margin-top:4px}
 
 .hidden{display:none}
+
+/* Linha decorativa */
+.divider{
+  width:40px;height:2px;
+  background:linear-gradient(90deg,transparent,#E2D1B5,transparent);
+  margin:0 auto 20px;
+}
 </style>
 </head>
 <body>
@@ -145,6 +175,7 @@ body{
 <!-- Tela PIN -->
 <div class="card" id="pinScreen">
   <div class="title">Extrato Stone</div>
+  <div class="divider"></div>
   <div class="desc">Digite a senha para acessar</div>
   <div class="pin-row">
     <input type="tel" maxlength="1" inputmode="numeric" data-p="0" autofocus>
@@ -158,6 +189,7 @@ body{
 <!-- Tela principal -->
 <div class="card hidden" id="mainScreen">
   <div class="title">Extrato Stone</div>
+  <div class="divider"></div>
   <div class="desc">Selecione o arquivo da Stone para converter</div>
 
   <div id="uploadArea">
@@ -189,7 +221,7 @@ body{
 
 <script>
 // PIN
-var PIN = '1234';
+var PIN = '1299';
 var pins = document.querySelectorAll('.pin-row input');
 
 pins.forEach(function(inp, i) {
@@ -237,15 +269,18 @@ var savedName = '';
 
 document.getElementById('downloadBtn').addEventListener('click', function() {
   if (!savedOFX) return;
-  var blob = new Blob([savedOFX], { type: 'application/x-ofx' });
+  var blob = new Blob([savedOFX], { type: 'application/octet-stream' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
   a.download = savedName;
+  a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(function() {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 });
 
 // ---- Processamento ----
